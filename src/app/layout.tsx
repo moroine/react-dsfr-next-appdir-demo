@@ -1,4 +1,4 @@
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v16-appRouter';
 import MuiDsfrThemeProvider from "@codegouvfr/react-dsfr/mui";
 import { Header } from "@codegouvfr/react-dsfr/Header";
 import { Footer } from "@codegouvfr/react-dsfr/Footer";
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode; })
 	return (
 		<html {...getHtmlAttributes({ lang })}>
 			<head>
-				<title>Next 15 App Router Demo Setup</title>
+				<title>Next 16 App Router Demo Setup</title>
 				<DsfrHead
 					preloadFonts={[
 						//"Marianne-Light",

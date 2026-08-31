@@ -27,7 +27,7 @@ export default function Mui() {
 			<FormControlLabel control={<Switch
 				checked={isDark}
 				onChange={event => setIsDark(event.target.checked)}
-				inputProps={{ 'aria-label': 'controlled' }}
+				slotProps={{ input: { 'aria-label': 'controlled' } }}
 			/>} label="Dark mode" />
 			<Typography sx={{ mt: 2 }} variant="h4">
 				This is a place for testing MUI components
