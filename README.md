@@ -1,3 +1,53 @@
+# Fork : streaming de Server Components et moteur DSFR
+
+Ce fork de [garronej/react-dsfr-next-appdir-demo](https://github.com/garronej/react-dsfr-next-appdir-demo) mesure les divergences d'hydratation que produit le moteur JS du DSFR quand le contenu arrive par streaming. Il sert de banc d'essai à `moroine/react-dsfr#2`.
+
+La démo est conservée telle quelle (layout, Header, Footer, consentement, MUI). Ce qui s'y ajoute :
+
+- **`src/streaming/`** : les familles de composants que le moteur instrumente. `display` est exclue, car le `Header` du layout rend déjà `<Display />`.
+- **Routes de test**, qui montent toutes `<StartDsfrOnHydration />` comme les autres pages de la démo, sauf mention contraire :
+
+  | Route | Contenu |
+  |---|---|
+  | `/no-streaming` | toutes les familles, sans `<Suspense>` propre à la page |
+  | `/streaming` | les mêmes, derrière un Server Component asynchrone (1,5 s) |
+  | `/streaming-client` | les mêmes, rendues par un Client Component |
+  | `/streaming-without-start` | comme `/streaming`, sans `<StartDsfrOnHydration />` |
+  | `/{no-streaming,streaming,streaming-client}/family/<nom>` | une seule famille, car React tronque son diff d'hydratation quand il y en a beaucoup |
+
+- **`e2e/`** : un test fonctionnel Playwright (`streaming.spec.ts`) et un relevé (`sweep.spec.ts`) qui ne fait jamais échouer et écrit un tableau dans `e2e/results/summary.md`.
+
+React ne signale les divergences d'hydratation qu'en développement : les mesures se font contre `next dev`.
+
+## Mesurer en local
+
+Il faut Chrome installé. Le dépôt est en yarn 1 : utilisez `npx --yes yarn@1.22.22`, car corepack peut résoudre `yarn` en yarn 4.
+
+```bash
+npx --yes yarn@1.22.22 install
+cd e2e && npx --yes yarn@1.22.22 install
+
+# Version publiée de react-dsfr
+npx playwright test sweep.spec.ts     # relevé
+npx playwright test streaming.spec.ts # test fonctionnel
+
+# Un build local de react-dsfr
+(cd ../../react-dsfr && npx --yes yarn@1.22.22 install && npx --yes yarn@1.22.22 build)
+./use-react-dsfr.sh ../../react-dsfr/dist
+npx playwright test sweep.spec.ts
+
+# Retour à la version publiée
+(cd .. && npx --yes yarn@1.22.22 install --force)
+```
+
+`use-react-dsfr.sh` remplace le paquet dans `node_modules` sans toucher à `package.json`, et supprime `.next`. Le cache de Next servirait sinon l'ancienne version, qui porte le même numéro.
+
+## CI
+
+`.github/workflows/streaming-e2e.yml` mesure trois versions : la version publiée, et les branches de `moroine/react-dsfr` des PR #1 et #2, construites dans le job. Chaque job ajoute son relevé au résumé de l'exécution. Seule la PR #2 doit passer le test fonctionnel.
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

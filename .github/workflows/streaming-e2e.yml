@@ -1,0 +1,84 @@
+name: Streaming e2e
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Version installée par package.json : la référence.
+          - label: react-dsfr publié (npm)
+            react-dsfr-ref: ""
+            must-pass: false
+          - label: "moroine/react-dsfr#1 (hydratation)"
+            react-dsfr-ref: hydratation
+            must-pass: false
+          - label: "moroine/react-dsfr#2 (hydratation-porte)"
+            react-dsfr-ref: hydratation-porte
+            must-pass: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: demo
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Le dépôt est en yarn 1 : sans champ packageManager, corepack pourrait
+      # résoudre yarn en yarn 4.
+      - name: Dépendances de la démo
+        working-directory: demo
+        run: npx --yes yarn@1.22.22 install --frozen-lockfile
+
+      - name: Récupère react-dsfr
+        if: matrix.react-dsfr-ref != ''
+        uses: actions/checkout@v4
+        with:
+          repository: moroine/react-dsfr
+          ref: ${{ matrix.react-dsfr-ref }}
+          path: react-dsfr
+
+      # L'installation exécute patch-package (script prepare), qui patche le
+      # moteur @gouvfr/dsfr que le build copie dans dist/.
+      - name: Construit react-dsfr
+        if: matrix.react-dsfr-ref != ''
+        working-directory: react-dsfr
+        run: |
+          npx --yes yarn@1.22.22 install --frozen-lockfile
+          npx --yes yarn@1.22.22 build
+
+      - name: Installe ce build dans la démo
+        if: matrix.react-dsfr-ref != ''
+        run: demo/e2e/use-react-dsfr.sh react-dsfr/dist
+
+      - name: Dépendances de l'e2e
+        working-directory: demo/e2e
+        run: npx --yes yarn@1.22.22 install --frozen-lockfile
+
+      - name: Relevé des divergences d'hydratation
+        working-directory: demo/e2e
+        env:
+          REACT_DSFR_LABEL: ${{ matrix.label }}
+        run: npx playwright test sweep.spec.ts
+
+      - name: Tests e2e
+        working-directory: demo/e2e
+        continue-on-error: ${{ !matrix.must-pass }}
+        run: npx playwright test streaming.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultats-${{ strategy.job-index }}
+          path: |
+            demo/e2e/results
+            demo/e2e/test-results
+          if-no-files-found: ignore
