@@ -24,11 +24,11 @@ jobs:
             react-dsfr-ref: hydratation-porte
             must-pass: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: demo
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
 
@@ -40,7 +40,7 @@ jobs:
 
       - name: Récupère react-dsfr
         if: matrix.react-dsfr-ref != ''
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: moroine/react-dsfr
           ref: ${{ matrix.react-dsfr-ref }}
@@ -74,7 +74,7 @@ jobs:
         continue-on-error: ${{ !matrix.must-pass }}
         run: npx playwright test streaming.spec.ts
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: resultats-${{ strategy.job-index }}

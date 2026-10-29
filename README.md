@@ -46,6 +46,8 @@ npx playwright test sweep.spec.ts
 
 `.github/workflows/streaming-e2e.yml` mesure trois versions : la version publiée, et les branches de `moroine/react-dsfr` des PR #1 et #2, construites dans le job. Chaque job ajoute son relevé au résumé de l'exécution. Seule la PR #2 doit passer le test fonctionnel.
 
+La colonne « éléments instrumentés » du relevé compte les éléments qui portent un marqueur `data-fr-js-*`. La PR #1 supprime presque tous ces marqueurs : pour elle, la colonne ne dit rien du travail du moteur.
+
 ---
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
